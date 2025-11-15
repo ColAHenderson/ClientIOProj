@@ -20,7 +20,8 @@ const CheckEmailSchema = z.object({
 const RegisterSchema = z.object({
   email: z.string().email(),
   password: z.string().min(6),
-  name: z.string().min(1),
+  firstName: z.string().min(1),
+  lastName: z.string().min(1),
 })
 
 const LoginSchema = z.object({
@@ -31,7 +32,6 @@ const LoginSchema = z.object({
 // ---------- Routes ----------
 
 // POST /api/auth/check-email
-// Used by your homepage to decide login vs register
 router.post('/check-email', async (req, res) => {
   try {
     const { email } = CheckEmailSchema.parse(req.body)
@@ -48,7 +48,7 @@ router.post('/check-email', async (req, res) => {
   }
 })
 
-// (Optional) also support GET /api/auth/check-email?email=...
+// Optional GET /api/auth/check-email?email=...
 router.get('/check-email', async (req, res) => {
   try {
     const email = String(req.query.email ?? '')
@@ -69,7 +69,9 @@ router.get('/check-email', async (req, res) => {
 // POST /api/auth/register
 router.post('/register', async (req, res) => {
   try {
-    const { email, password, name } = RegisterSchema.parse(req.body)
+    const { email, password, firstName, lastName } = RegisterSchema.parse(
+      req.body
+    )
 
     const existing = await prisma.user.findUnique({ where: { email } })
     if (existing) {
@@ -82,8 +84,9 @@ router.post('/register', async (req, res) => {
       data: {
         email,
         passwordHash,
-        name,
-        role: 'CLIENT', // adjust if your schema uses different roles
+        firstName,
+        lastName,
+        role: 'CLIENT', // adjust if your Role enum uses different values
       },
     })
 
@@ -102,7 +105,8 @@ router.post('/register', async (req, res) => {
       user: {
         id: user.id,
         email: user.email,
-        name: user.name,
+        firstName: user.firstName,
+        lastName: user.lastName,
         role: user.role,
       },
     })
@@ -142,7 +146,8 @@ router.post('/login', async (req, res) => {
       user: {
         id: user.id,
         email: user.email,
-        name: user.name,
+        firstName: user.firstName,
+        lastName: user.lastName,
         role: user.role,
       },
     })
@@ -160,7 +165,13 @@ router.get('/me', authMiddleware, async (req: AuthenticatedRequest, res) => {
 
   const user = await prisma.user.findUnique({
     where: { id: req.user.userId },
-    select: { id: true, email: true, name: true, role: true },
+    select: {
+      id: true,
+      email: true,
+      firstName: true,
+      lastName: true,
+      role: true,
+    },
   })
 
   if (!user) {
