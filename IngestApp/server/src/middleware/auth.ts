@@ -1,5 +1,5 @@
 // src/middleware/auth.ts
-import type { Request, Response, NextFunction } from 'express'
+import { Request, Response, NextFunction } from 'express'
 import jwt from 'jsonwebtoken'
 import { env } from '../config/env'
 
@@ -12,8 +12,8 @@ export interface JwtPayload {
   role: UserRole
 }
 
-// This now EXTENDS Express.Request so we get headers/body/params, etc.
-export interface AuthenticatedRequest extends Request {
+// Make this a TYPE ALIAS that intersects with Express.Request
+export type AuthenticatedRequest = Request & {
   user?: JwtPayload
 }
 

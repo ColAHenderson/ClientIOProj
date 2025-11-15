@@ -2,7 +2,7 @@
 import { Router } from 'express'
 import { z } from 'zod'
 import { prisma } from '../prisma'
-import { authMiddleware, AuthenticatedRequest } from '../middleware/auth'
+import { authMiddleware, type AuthenticatedRequest } from '../middleware/auth'
 
 const router = Router()
 
@@ -122,7 +122,7 @@ router.post('/', authMiddleware, async (req: AuthenticatedRequest, res) => {
 
     const { userId, role } = req.user
 
-    const parsed = createAppointmentSchema.safeParse(req.body)
+    const parsed = createAppointmentSchema.safeParse(req.body as any)
     if (!parsed.success) {
       return res.status(400).json({
         message: 'Invalid appointment data',

@@ -2,7 +2,7 @@
 import { Router } from 'express'
 import { z } from 'zod'
 import { prisma } from '../prisma'
-import { authMiddleware, AuthenticatedRequest } from '../middleware/auth'
+import { authMiddleware, type AuthenticatedRequest } from '../middleware/auth'
 
 const router = Router()
 
@@ -58,7 +58,7 @@ router.post('/templates', authMiddleware, async (req: AuthenticatedRequest, res)
       return res.status(403).json({ message: 'Clients cannot create templates' })
     }
 
-    const parsed = createTemplateSchema.safeParse(req.body)
+    const parsed = createTemplateSchema.safeParse(req.body as any)
     if (!parsed.success) {
       return res.status(400).json({
         message: 'Invalid template input',
@@ -127,7 +127,7 @@ router.get(
       }
 
       const { userId, role } = req.user
-      const { appointmentId } = req.params
+      const { appointmentId } = req.params as any
 
       const appointment = await prisma.appointment.findUnique({
         where: { id: appointmentId },
@@ -209,7 +209,7 @@ router.post('/submit', authMiddleware, async (req: AuthenticatedRequest, res) =>
 
     const { userId, role } = req.user
 
-    const parsed = submitIntakeSchema.safeParse(req.body)
+    const parsed = submitIntakeSchema.safeParse(req.body as any)
     if (!parsed.success) {
       return res.status(400).json({
         message: 'Invalid submission input',
