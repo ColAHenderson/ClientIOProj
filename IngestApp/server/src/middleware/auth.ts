@@ -3,14 +3,16 @@ import type { Request, Response, NextFunction } from 'express'
 import jwt from 'jsonwebtoken'
 import { env } from '../config/env'
 
-type UserRole = 'CLIENT' | 'PRACTITIONER' | 'ADMIN'
+// Match your roles from the User model
+export type UserRole = 'CLIENT' | 'PRACTITIONER' | 'ADMIN'
 
-interface JwtPayload {
+export interface JwtPayload {
   userId: string
   email: string
   role: UserRole
 }
 
+// This now EXTENDS Express.Request so we get headers/body/params, etc.
 export interface AuthenticatedRequest extends Request {
   user?: JwtPayload
 }
