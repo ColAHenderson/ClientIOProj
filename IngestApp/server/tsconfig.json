@@ -1,17 +1,17 @@
 {
   "compilerOptions": {
-    "target": "ES2020",
-    "module": "commonjs",
-    "rootDir": "src",
-    "outDir": "dist",
-    "esModuleInterop": true,
-    "forceConsistentCasingInFileNames": true,
+  "target": "ES2020",
+  "module": "commonjs",
+  "rootDir": "src",
+  "outDir": "dist",
+  "esModuleInterop": true,
+  "forceConsistentCasingInFileNames": true,
 
-    "strict": false,
-    "noImplicitAny": false,
-    "skipLibCheck": true,
+  "strict": false,
+  "noImplicitAny": false,
+  "skipLibCheck": true,
 
-    "types": ["node", "express"]
-  },
-  "include": ["src"]
+  "types": ["node", "express"]
+},
+"include": ["src"]
 }
