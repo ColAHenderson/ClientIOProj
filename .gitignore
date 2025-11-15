@@ -40,11 +40,6 @@ temp/
 .idea/
 *.swp
 
-# Lock files (optional—keep if your team uses them)
-package-lock.json
-pnpm-lock.yaml
-yarn.lock
-
 # --------------------------
 # Prisma
 # --------------------------
