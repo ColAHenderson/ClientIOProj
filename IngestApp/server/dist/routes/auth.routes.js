@@ -61,7 +61,11 @@ router.post('/register', async (req, res) => {
                 role,
             },
         });
-        const payload = { userId: user.id, role: user.role };
+        const payload = {
+            userId: user.id,
+            email: user.email,
+            role: user.role,
+        };
         const accessToken = (0, jwt_1.signAccessToken)(payload);
         const refreshToken = (0, jwt_1.signRefreshToken)(payload);
         return res.status(201).json({
@@ -98,7 +102,11 @@ router.post('/login', async (req, res) => {
         if (!valid) {
             return res.status(401).json({ message: 'Invalid email or password' });
         }
-        const payload = { userId: user.id, role: user.role };
+        const payload = {
+            userId: user.id,
+            email: user.email,
+            role: user.role,
+        };
         const accessToken = (0, jwt_1.signAccessToken)(payload);
         const refreshToken = (0, jwt_1.signRefreshToken)(payload);
         return res.json({

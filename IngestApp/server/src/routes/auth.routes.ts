@@ -68,7 +68,11 @@ router.post('/register', async (req, res) => {
       },
     })
 
-    const payload = { userId: user.id, role: user.role }
+    const payload = {
+      userId: user.id,
+      email: user.email,
+      role: user.role,
+    }
     const accessToken = signAccessToken(payload)
     const refreshToken = signRefreshToken(payload)
 
@@ -111,7 +115,11 @@ router.post('/login', async (req, res) => {
       return res.status(401).json({ message: 'Invalid email or password' })
     }
 
-    const payload = { userId: user.id, role: user.role }
+    const payload = {
+      userId: user.id,
+      email: user.email,
+      role: user.role,
+    }
     const accessToken = signAccessToken(payload)
     const refreshToken = signRefreshToken(payload)
 
