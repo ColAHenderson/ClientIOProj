@@ -12,8 +12,6 @@ const app = express()
 
 
 app.use(corsMiddleware)
-// (optional but nice to handle preflight explicitly)
-app.options('*', corsMiddleware)
 
 app.use(express.json())
 
