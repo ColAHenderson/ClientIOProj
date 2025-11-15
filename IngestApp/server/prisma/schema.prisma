@@ -1,0 +1,80 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id           String        @id @default(cuid())
+  email        String        @unique
+  passwordHash String
+  firstName    String
+  lastName     String
+  role         Role          @default(CLIENT)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  appointmentsAsClient       Appointment[]      @relation("ClientAppointments")
+  appointmentsAsPractitioner Appointment[]      @relation("PractitionerAppointments")
+  intakeSubmissions          IntakeSubmission[]
+}
+
+model Appointment {
+  id             String     @id @default(cuid())
+  client         User       @relation("ClientAppointments", fields: [clientId], references: [id])
+  clientId       String
+  practitioner   User       @relation("PractitionerAppointments", fields: [practitionerId], references: [id])
+  practitionerId String
+
+  startsAt DateTime
+  endsAt   DateTime
+
+  status    AppointmentStatus @default(PENDING)
+  createdAt DateTime          @default(now())
+  updatedAt DateTime          @updatedAt
+
+  intakeSubmissions IntakeSubmission[]
+}
+
+enum Role {
+  CLIENT
+  PRACTITIONER
+  ADMIN
+}
+
+enum AppointmentStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+  COMPLETED
+}
+
+model IntakeFormTemplate {
+  id          String             @id @default(cuid())
+  name        String
+  description String?
+  fieldsJson  String
+  isActive    Boolean            @default(true)
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+
+  submissions IntakeSubmission[]
+}
+
+model IntakeSubmission {
+  id            String            @id @default(cuid())
+  client        User              @relation(fields: [clientId], references: [id])
+  clientId      String
+  appointment   Appointment       @relation(fields: [appointmentId], references: [id])
+  appointmentId String
+  template      IntakeFormTemplate @relation(fields: [templateId], references: [id])
+  templateId    String
+
+  answersJson String
+  submittedAt DateTime @default(now())
+
+  @@unique([appointmentId, clientId])
+}
