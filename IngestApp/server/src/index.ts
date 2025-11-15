@@ -11,16 +11,16 @@ import userRoutes from './routes/user.routes'
 
 const app = express()
 
-// CORS + JSON
+// CORS + JSON parsing
 app.use(corsMiddleware)
 app.use(express.json())
 
-// Simple health check
+// Health check
 app.get('/', (_req, res) => {
   res.json({ message: 'API is running' })
 })
 
-// ✅ Mount routers with these base paths
+// These MUST exist for /api/... to work
 app.use('/api/auth', authRoutes)
 app.use('/api/appointments', appointmentRoutes)
 app.use('/api/availability', availabilityRoutes)

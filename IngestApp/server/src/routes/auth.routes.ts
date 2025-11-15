@@ -1,58 +1,77 @@
-/// src/routes/auth.routes.ts
+// src/routes/auth.routes.ts
 import { Router } from 'express'
-import { prisma } from '../prisma'
 import bcrypt from 'bcryptjs'
 import { z } from 'zod'
-import { signAccessToken, signRefreshToken } from '../utils/jwt'
+import { prisma } from '../prisma'
+import {
+  signAccessToken,
+  signRefreshToken,
+  type JwtPayload,
+} from '../utils/jwt'
 import { authMiddleware, type AuthenticatedRequest } from '../middleware/auth'
 
 const router = Router()
 
-// Zod schemas
-const registerSchema = z.object({
+// ---------- Schemas ----------
+const CheckEmailSchema = z.object({
   email: z.string().email(),
-  password: z.string().min(8, 'Password must be at least 8 characters'),
-  firstName: z.string().min(1),
-  lastName: z.string().min(1),
-  role: z.enum(['CLIENT', 'PRACTITIONER', 'ADMIN']).optional().default('CLIENT'),
 })
 
-const loginSchema = z.object({
+const RegisterSchema = z.object({
   email: z.string().email(),
-  password: z.string().min(1),
+  password: z.string().min(6),
+  name: z.string().min(1),
 })
 
-// Helper to shape user object for responses (no password hash)
-const toUserDto = (user: any) => ({
-  id: user.id,
-  email: user.email,
-  firstName: user.firstName,
-  lastName: user.lastName,
-  role: user.role,
-  createdAt: user.createdAt,
+const LoginSchema = z.object({
+  email: z.string().email(),
+  password: z.string().min(6),
 })
 
-const checkEmailSchema = z.object({
-  email: z.string().email(),
+// ---------- Routes ----------
+
+// POST /api/auth/check-email
+// Used by your homepage to decide login vs register
+router.post('/check-email', async (req, res) => {
+  try {
+    const { email } = CheckEmailSchema.parse(req.body)
+
+    const existing = await prisma.user.findUnique({
+      where: { email },
+      select: { id: true },
+    })
+
+    return res.json({ exists: !!existing })
+  } catch (err) {
+    console.error('check-email error:', err)
+    return res.status(400).json({ message: 'Invalid request' })
+  }
+})
+
+// (Optional) also support GET /api/auth/check-email?email=...
+router.get('/check-email', async (req, res) => {
+  try {
+    const email = String(req.query.email ?? '')
+    const { email: parsedEmail } = CheckEmailSchema.parse({ email })
+
+    const existing = await prisma.user.findUnique({
+      where: { email: parsedEmail },
+      select: { id: true },
+    })
+
+    return res.json({ exists: !!existing })
+  } catch (err) {
+    console.error('check-email (GET) error:', err)
+    return res.status(400).json({ message: 'Invalid request' })
+  }
 })
 
 // POST /api/auth/register
 router.post('/register', async (req, res) => {
   try {
-    const parsed = registerSchema.safeParse(req.body as any)
-    if (!parsed.success) {
-      return res.status(400).json({
-        message: 'Invalid input',
-        errors: parsed.error.flatten(),
-      })
-    }
+    const { email, password, name } = RegisterSchema.parse(req.body)
 
-    const { email, password, firstName, lastName, role } = parsed.data
-
-    const existing = await prisma.user.findUnique({
-      where: { email },
-    })
-
+    const existing = await prisma.user.findUnique({ where: { email } })
     if (existing) {
       return res.status(409).json({ message: 'Email already in use' })
     }
@@ -63,64 +82,57 @@ router.post('/register', async (req, res) => {
       data: {
         email,
         passwordHash,
-        firstName,
-        lastName,
-        role,
+        name,
+        role: 'CLIENT', // adjust if your schema uses different roles
       },
     })
 
-    const payload = {
+    const payload: JwtPayload = {
       userId: user.id,
       email: user.email,
-      role: user.role,
+      role: user.role as any,
     }
+
     const accessToken = signAccessToken(payload)
     const refreshToken = signRefreshToken(payload)
 
     return res.status(201).json({
-      user: toUserDto(user),
-      tokens: {
-        accessToken,
-        refreshToken,
+      accessToken,
+      refreshToken,
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        role: user.role,
       },
     })
   } catch (err) {
-    console.error('Register error:', err)
-    return res.status(500).json({ message: 'Internal server error' })
+    console.error('register error:', err)
+    return res.status(400).json({ message: 'Invalid request' })
   }
 })
 
 // POST /api/auth/login
 router.post('/login', async (req, res) => {
   try {
-    const parsed = loginSchema.safeParse(req.body as any)
-    if (!parsed.success) {
-      return res.status(400).json({
-        message: 'Invalid input',
-        errors: parsed.error.flatten(),
-      })
+    const { email, password } = LoginSchema.parse(req.body)
+
+    const user = await prisma.user.findUnique({ where: { email } })
+    if (!user || !user.passwordHash) {
+      return res.status(401).json({ message: 'Invalid credentials' })
     }
 
-    const { email, password } = parsed.data
-
-    const user = await prisma.user.findUnique({
-      where: { email },
-    })
-
-    if (!user) {
-      return res.status(401).json({ message: 'Invalid email or password' })
+    const ok = await bcrypt.compare(password, user.passwordHash)
+    if (!ok) {
+      return res.status(401).json({ message: 'Invalid credentials' })
     }
 
-    const valid = await bcrypt.compare(password, user.passwordHash)
-    if (!valid) {
-      return res.status(401).json({ message: 'Invalid email or password' })
-    }
-
-    const payload = {
+    const payload: JwtPayload = {
       userId: user.id,
       email: user.email,
-      role: user.role,
+      role: user.role as any,
     }
+
     const accessToken = signAccessToken(payload)
     const refreshToken = signRefreshToken(payload)
 
@@ -130,38 +142,32 @@ router.post('/login', async (req, res) => {
       user: {
         id: user.id,
         email: user.email,
+        name: user.name,
         role: user.role,
       },
     })
   } catch (err) {
-    console.error('Login error:', err)
-    return res.status(500).json({ message: 'Internal server error' })
+    console.error('login error:', err)
+    return res.status(400).json({ message: 'Invalid request' })
   }
 })
 
-// POST /api/auth/check-email
-router.post('/check-email', async (req, res) => {
-  try {
-    const parsed = checkEmailSchema.safeParse(req.body as any)
-    if (!parsed.success) {
-      return res.status(400).json({
-        message: 'Invalid email',
-        errors: parsed.error.flatten(),
-      })
-    }
-
-    const { email } = parsed.data
-
-    const user = await prisma.user.findUnique({
-      where: { email },
-      select: { id: true },
-    })
-
-    return res.json({ exists: !!user })
-  } catch (err) {
-    console.error('POST /api/auth/check-email error:', err)
-    return res.status(500).json({ message: 'Internal server error' })
+// GET /api/auth/me
+router.get('/me', authMiddleware, async (req: AuthenticatedRequest, res) => {
+  if (!req.user) {
+    return res.status(401).json({ message: 'Unauthorized' })
   }
+
+  const user = await prisma.user.findUnique({
+    where: { id: req.user.userId },
+    select: { id: true, email: true, name: true, role: true },
+  })
+
+  if (!user) {
+    return res.status(404).json({ message: 'User not found' })
+  }
+
+  return res.json({ user })
 })
 
 export default router
