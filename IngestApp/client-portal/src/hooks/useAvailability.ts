@@ -1,6 +1,9 @@
 // src/hooks/useAvailability.ts
 import { useEffect, useState } from 'react'
 
+const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:4000'
+
+
 export interface AvailabilitySlot {
   start: string
   end: string
@@ -44,7 +47,7 @@ export function useAvailability(
         })
 
         const res = await fetch(
-          `http://localhost:4000/api/availability?${params.toString()}`
+          `${API_URL}/api/availability?${params.toString()}`
         )
 
         if (!res.ok) {

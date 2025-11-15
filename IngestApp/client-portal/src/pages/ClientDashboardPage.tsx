@@ -3,6 +3,9 @@ import React, { useEffect, useState } from 'react'
 import { useAuth } from '../context/AuthContext'
 import IntakeFormPanel from '../components/IntakeFormPanel'
 
+const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:4000'
+
+
 interface AppointmentSummary {
   id: string
   startsAt: string
@@ -29,7 +32,7 @@ const ClientDashboardPage: React.FC = () => {
       try {
         setLoading(true)
         setError(null)
-        const res = await fetch('http://localhost:4000/api/appointments', {
+        const res = await fetch(`${API_URL}/api/appointments`, {
           headers: {
             Authorization: `Bearer ${accessToken}`,
           },

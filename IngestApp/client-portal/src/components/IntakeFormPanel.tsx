@@ -5,6 +5,9 @@ import { useAuth } from '../context/AuthContext'
 import { useIntakeForm } from '../hooks/useIntakeForm'
 import type { IntakeField } from '../hooks/useIntakeForm'
 
+const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:4000'
+
+
 interface Props {
   appointmentId: string | null
 }
@@ -55,7 +58,7 @@ const IntakeFormPanel: React.FC<Props> = ({ appointmentId }) => {
     }
 
     try {
-      const res = await fetch('http://localhost:4000/api/intake/submit', {
+      const res = await fetch(`${API_URL}/api/intake/submit`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

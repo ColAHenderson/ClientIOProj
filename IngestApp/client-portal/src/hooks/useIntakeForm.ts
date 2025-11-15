@@ -3,6 +3,9 @@ import { useEffect, useState } from 'react'
 
 export type IntakeFieldType = 'text' | 'textarea' | 'number' | 'select' | 'checkbox'
 
+const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:4000'
+
+
 export interface IntakeField {
   id: string
   label: string
@@ -58,7 +61,7 @@ export function useIntakeForm(
         setError(null)
 
         const res = await fetch(
-          `http://localhost:4000/api/intake/appointment/${appointmentId}`,
+          `${API_URL}/api/intake/appointment/${appointmentId}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,

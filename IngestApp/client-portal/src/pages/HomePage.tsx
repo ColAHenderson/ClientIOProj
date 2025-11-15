@@ -4,6 +4,9 @@ import type { FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 
+const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:4000'
+
+
 const HomePage: React.FC = () => {
   const { user } = useAuth()
   const navigate = useNavigate()
@@ -25,7 +28,7 @@ const HomePage: React.FC = () => {
     try {
       setSubmitting(true)
 
-      const res = await fetch('http://localhost:4000/api/auth/check-email', {
+      const res = await fetch(`${API_URL}/api/auth/check-email`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: trimmed }),

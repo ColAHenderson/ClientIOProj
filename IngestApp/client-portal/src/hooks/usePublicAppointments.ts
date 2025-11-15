@@ -1,6 +1,9 @@
 // src/hooks/usePublicAppointments.ts
 import { useEffect, useState } from 'react'
 
+const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:4000'
+
+
 export interface PublicAppointment {
   id: string
   startsAt: string
@@ -35,7 +38,7 @@ export function usePublicAppointments(): UsePublicAppointmentsResult {
         setLoading(true)
         setError(null)
 
-        const res = await fetch('http://localhost:4000/api/appointments/public')
+        const res = await fetch(`${API_URL}/api/appointments/public`)
 
         if (!res.ok) {
           throw new Error(`Request failed with status ${res.status}`)

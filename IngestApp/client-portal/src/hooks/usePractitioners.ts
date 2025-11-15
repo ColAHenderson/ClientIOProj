@@ -1,6 +1,8 @@
 // src/hooks/usePractitioners.ts
 import { useEffect, useState } from 'react'
 
+const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:4000'
+
 export interface PractitionerSummary {
   id: string
   name: string
@@ -25,7 +27,7 @@ export function usePractitioners(): UsePractitionersResult {
         setError(null)
 
         const res = await fetch(
-          'http://localhost:4000/api/practitioners/public'
+          `${API_URL}/api/practitioners/public`
         )
 
         if (!res.ok) {

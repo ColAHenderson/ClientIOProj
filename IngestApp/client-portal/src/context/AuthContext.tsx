@@ -2,6 +2,9 @@
 import React, { createContext, useEffect, useState } from 'react'
 import type { ReactNode } from 'react'
 
+const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:4000'
+
+
 interface AuthUser {
   id: string
   email: string
@@ -73,7 +76,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = async (payload: LoginPayload): Promise<boolean> => {
     try {
       setError(null)
-      const res = await fetch('http://localhost:4000/api/auth/login', {
+      const res = await fetch(`${API_URL}/api/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
@@ -112,7 +115,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const register = async (payload: RegisterPayload): Promise<boolean> => {
     try {
       setError(null)
-      const res = await fetch('http://localhost:4000/api/auth/register', {
+      const res = await fetch(`${API_URL}/api/auth/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
