@@ -7,10 +7,16 @@ import userRoutes from './routes/user.routes'
 import appointmentRoutes from './routes/appointments.routes'
 import availabilityRoutes from './routes/availability.routes'
 import intakeRoutes from './routes/intake.routes'
+import cors from 'cors'
 
 const app = express()
 
 const PORT = process.env.PORT ? Number(process.env.PORT) : 4000
+
+const allowedOrigins = [
+  'http://localhost:5173',
+  'https://clientioproj.onrender.com/', // your production frontend
+]
 
 // Middlewares
 app.use(corsMiddleware)
@@ -24,6 +30,19 @@ app.get('/api/health', (_req, res) => {
     timestamp: new Date().toISOString(),
   })
 })
+
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      if (!origin) return callback(null, true)
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true)
+      }
+      return callback(new Error('Not allowed by CORS'))
+    },
+    credentials: false,
+  })
+)
 
 // Routes
 app.use('/api/auth', authRoutes)
