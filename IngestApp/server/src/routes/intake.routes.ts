@@ -126,7 +126,7 @@ router.get(
         return res.status(401).json({ message: 'Not authenticated' })
       }
 
-      const { userId, role } = req.user
+      const { userId, role } = req.user as any
       const { appointmentId } = req.params as any
 
       const appointment = await prisma.appointment.findUnique({
@@ -207,7 +207,7 @@ router.post('/submit', authMiddleware, async (req: AuthenticatedRequest, res) =>
       return res.status(401).json({ message: 'Not authenticated' })
     }
 
-    const { userId, role } = req.user
+    const { userId, role } = req.user as any
 
     const parsed = submitIntakeSchema.safeParse(req.body as any)
     if (!parsed.success) {

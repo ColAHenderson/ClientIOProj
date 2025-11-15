@@ -2,6 +2,7 @@
 import 'dotenv/config'
 import express from 'express'
 import { corsMiddleware } from './config/cors'
+
 import authRoutes from './routes/auth.routes'
 import appointmentRoutes from './routes/appointments.routes'
 import availabilityRoutes from './routes/availability.routes'
@@ -10,17 +11,16 @@ import userRoutes from './routes/user.routes'
 
 const app = express()
 
-
+// CORS + JSON
 app.use(corsMiddleware)
-
 app.use(express.json())
 
-// health check
+// Simple health check
 app.get('/', (_req, res) => {
   res.json({ message: 'API is running' })
 })
 
-//routes
+// ✅ Mount routers with these base paths
 app.use('/api/auth', authRoutes)
 app.use('/api/appointments', appointmentRoutes)
 app.use('/api/availability', availabilityRoutes)

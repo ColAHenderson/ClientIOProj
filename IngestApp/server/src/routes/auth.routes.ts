@@ -1,9 +1,10 @@
 /// src/routes/auth.routes.ts
 import { Router } from 'express'
-import { z } from 'zod'
-import bcrypt from 'bcryptjs'
 import { prisma } from '../prisma'
+import bcrypt from 'bcryptjs'
+import { z } from 'zod'
 import { signAccessToken, signRefreshToken } from '../utils/jwt'
+import { authMiddleware, type AuthenticatedRequest } from '../middleware/auth'
 
 const router = Router()
 
@@ -38,7 +39,7 @@ const checkEmailSchema = z.object({
 // POST /api/auth/register
 router.post('/register', async (req, res) => {
   try {
-    const parsed = registerSchema.safeParse(req.body)
+    const parsed = registerSchema.safeParse(req.body as any)
     if (!parsed.success) {
       return res.status(400).json({
         message: 'Invalid input',
@@ -92,7 +93,7 @@ router.post('/register', async (req, res) => {
 // POST /api/auth/login
 router.post('/login', async (req, res) => {
   try {
-    const parsed = loginSchema.safeParse(req.body)
+    const parsed = loginSchema.safeParse(req.body as any)
     if (!parsed.success) {
       return res.status(400).json({
         message: 'Invalid input',
@@ -124,10 +125,12 @@ router.post('/login', async (req, res) => {
     const refreshToken = signRefreshToken(payload)
 
     return res.json({
-      user: toUserDto(user),
-      tokens: {
-        accessToken,
-        refreshToken,
+      accessToken,
+      refreshToken,
+      user: {
+        id: user.id,
+        email: user.email,
+        role: user.role,
       },
     })
   } catch (err) {
@@ -139,7 +142,7 @@ router.post('/login', async (req, res) => {
 // POST /api/auth/check-email
 router.post('/check-email', async (req, res) => {
   try {
-    const parsed = checkEmailSchema.safeParse(req.body)
+    const parsed = checkEmailSchema.safeParse(req.body as any)
     if (!parsed.success) {
       return res.status(400).json({
         message: 'Invalid email',

@@ -47,7 +47,7 @@ function generateSlotsForDate(date: Date, slotMinutes = 30) {
  */
 router.get('/', async (req, res) => {
   try {
-    const parsed = availabilityQuerySchema.safeParse(req.query)
+    const parsed = availabilityQuerySchema.safeParse(req.query as any)
     if (!parsed.success) {
       return res.status(400).json({
         message: 'Invalid query params',
