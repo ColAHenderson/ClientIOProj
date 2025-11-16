@@ -24,8 +24,8 @@ interface Practitioner {
 }
 
 interface AvailabilitySlot {
-  startsAt: string
-  endsAt: string
+  startsAt: Date
+  endsAt: Date
 }
 
 const ClientDashboardPage: React.FC = () => {
