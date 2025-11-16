@@ -19,7 +19,8 @@ interface AppointmentSummary {
 
 interface Practitioner {
   id: string
-  name: string
+  firstName: string
+  lastName: string
   email: string
 }
 
@@ -253,7 +254,7 @@ const ClientDashboardPage: React.FC = () => {
               )}
               {practitioners.map((p) => (
                 <option key={p.id} value={p.id}>
-                  {p.name} ({p.email})
+                  {p.firstName +" "+ p.lastName} ({p.email})
                 </option>
               ))}
             </select>
