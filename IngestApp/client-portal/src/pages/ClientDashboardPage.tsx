@@ -87,7 +87,7 @@ const ClientDashboardPage: React.FC = () => {
     const fetchPractitioners = async () => {
       try {
         setBookingError(null)
-        const res = await fetch(`${API_URL}/api/practitioners/public`, {
+        const res = await fetch(`${API_URL}/api/users/practitioners/public`, {
           headers: {
             Authorization: `Bearer ${accessToken}`,
           },
