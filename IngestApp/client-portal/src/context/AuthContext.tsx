@@ -4,7 +4,6 @@ import type { ReactNode } from 'react'
 
 const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:4000'
 
-
 interface AuthUser {
   id: string
   email: string
@@ -73,41 +72,59 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(next))
   }
 
-  const login = async (payload: LoginPayload): Promise<boolean> => {
+  const login = async ({ email, password }: LoginPayload): Promise<boolean> => {
+    setError(null)
+
     try {
-      setError(null)
       const res = await fetch(`${API_URL}/api/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
+        body: JSON.stringify({ email, password }),
       })
 
-      if (!res.ok) {
-        if (res.status === 401) {
-          throw new Error('Invalid email or password.')
+      const text = await res.text()
+      let data: any = {}
+      if (text) {
+        try {
+          data = JSON.parse(text)
+        } catch (err) {
+          console.error('Failed to parse login JSON:', err, 'raw:', text)
         }
-        throw new Error(`Login failed with status ${res.status}`)
       }
 
-      const data = await res.json()
+      if (!res.ok) {
+        console.error('Login failed:', res.status, data)
+        setError(data?.message || `Login failed with status ${res.status}`)
+        return false
+      }
+
+      const accessToken: string | undefined = data?.accessToken
+      const userData = data?.user
+
+      if (!accessToken || !userData) {
+        console.error('Unexpected login response shape:', data)
+        setError('Login response missing user or token.')
+        return false
+      }
 
       const user: AuthUser = {
-        id: data.user.id,
-        email: data.user.email,
-        firstName: data.user.firstName,
-        lastName: data.user.lastName,
-        role: data.user.role,
+        id: userData.id,
+        email: userData.email,
+        firstName: userData.firstName,
+        lastName: userData.lastName,
+        role: userData.role,
       }
 
+      // Store in state + localStorage
       persist({
         user,
-        accessToken: data.tokens.accessToken,
+        accessToken,
       })
 
       return true
     } catch (err: any) {
       console.error('Login error:', err)
-      setError(err.message ?? 'Login failed')
+      setError(err.message ?? 'Something went wrong during login.')
       return false
     }
   }
@@ -124,27 +141,42 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }),
       })
 
-      if (!res.ok) {
-        const body = await res.json().catch(() => ({}))
-        if (res.status === 409) {
-          throw new Error(body.message ?? 'Email already in use.')
+      const text = await res.text()
+      let data: any = {}
+      if (text) {
+        try {
+          data = JSON.parse(text)
+        } catch (err) {
+          console.error('Failed to parse register JSON:', err, 'raw:', text)
         }
-        throw new Error(`Registration failed with status ${res.status}`)
       }
 
-      const data = await res.json()
+      if (!res.ok) {
+        if (res.status === 409) {
+          throw new Error(data?.message ?? 'Email already in use.')
+        }
+        throw new Error(data?.message ?? `Registration failed with status ${res.status}`)
+      }
+
+      const accessToken: string | undefined = data?.accessToken
+      const userData = data?.user
+
+      if (!accessToken || !userData) {
+        console.error('Unexpected register response shape:', data)
+        throw new Error('Registration response missing user or token.')
+      }
 
       const user: AuthUser = {
-        id: data.user.id,
-        email: data.user.email,
-        firstName: data.user.firstName,
-        lastName: data.user.lastName,
-        role: data.user.role,
+        id: userData.id,
+        email: userData.email,
+        firstName: userData.firstName,
+        lastName: userData.lastName,
+        role: userData.role,
       }
 
       persist({
         user,
-        accessToken: data.tokens.accessToken,
+        accessToken,
       })
 
       return true
