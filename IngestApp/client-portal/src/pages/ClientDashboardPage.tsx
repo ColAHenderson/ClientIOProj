@@ -24,8 +24,8 @@ interface Practitioner {
 }
 
 interface AvailabilitySlot {
-  startsAt: Date
-  endsAt: Date
+  start: string
+  end: string
 }
 
 const ClientDashboardPage: React.FC = () => {
@@ -182,8 +182,8 @@ const ClientDashboardPage: React.FC = () => {
         },
         body: JSON.stringify({
           practitionerId: selectedPractitionerId,
-          startsAt: slot.startsAt,
-          endsAt: slot.endsAt,
+          startsAt: slot.start,
+          endsAt: slot.end,
         }),
       })
 
@@ -284,13 +284,13 @@ const ClientDashboardPage: React.FC = () => {
             ) : (
               <div className="flex flex-wrap gap-2">
                 {availabilitySlots.map((slot, idx) => {
-                  const start = new Date(slot.startsAt)
-                  const end = new Date(slot.endsAt)
+                  const start = new Date(slot.start)
+                  const end = new Date(slot.end)
                   const isSelected = idx === selectedSlotIndex
 
                   return (
                     <button
-                      key={`${slot.startsAt}-${slot.endsAt}-${idx}`}
+                      key={`${slot.start}-${slot.end}-${idx}`}
                       type="button"
                       onClick={() => setSelectedSlotIndex(idx)}
                       className={`rounded-full border px-3 py-1 text-xs ${
