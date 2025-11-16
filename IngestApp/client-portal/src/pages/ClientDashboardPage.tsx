@@ -127,7 +127,7 @@ const ClientDashboardPage: React.FC = () => {
         })
 
         const res = await fetch(
-          `${API_URL}/api/availability/slots?${params.toString()}`,
+          `${API_URL}/api/availability?${params.toString()}`,
           {
             headers: {
               Authorization: `Bearer ${accessToken}`,
